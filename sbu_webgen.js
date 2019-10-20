@@ -1,9 +1,5 @@
-// JS File
+// JS File for SBU WebGen
 
-// Imports:
-//jq = require("https://code.jquery.com/jquery-3.4.1.js");
-//import {text} from "@jashkenas/inputs";
-//Plotly = require("https://cdn.plot.ly/plotly-latest.min.js");
 
 // Fetching Sample Data with Firebrowse:
 var gene = 'GATA6';
