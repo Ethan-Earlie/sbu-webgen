@@ -55,7 +55,7 @@ fetchData = async function(gene_param,cohort_param) {
         size: 24
       },
       xref: 'paper',
-      x: 0.05,
+      x: 2,
     },
     xaxis: {
       title: {
