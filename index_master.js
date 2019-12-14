@@ -15,7 +15,9 @@ ethan_getEFDdata = async function(cohort_list_arg, gene_list_arg) {
   // Check that the fetch worked properly:
   if (expressionArray == 'Error: Invalid Input Fields for Query.') {
     return expressionArray;
-  };
+  } else if (expressionArray == 'Error: FireBrowse is Currently Offline.') {
+    return expressionArray;
+  }
 
   // Remove any genes with no mRNA-Seq results:
   var gene_list_arg = gene_list_arg.filter(gene => emptyGenesArray.includes(gene) == false);

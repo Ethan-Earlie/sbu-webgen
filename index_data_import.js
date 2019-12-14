@@ -40,8 +40,13 @@ getExpressionArray = async function(cohort_list_arg, gene_list_arg) {
   var expressionArray = [];
   
   // Run the fetch:
-  var TCGA_expression_JSON = await fetchmRNASeqData(cohort_list_arg,gene_list_arg);
-
+  try {
+    var TCGA_expression_JSON = await fetchmRNASeqData(cohort_list_arg,gene_list_arg);
+  }
+  catch(err) {
+    return ['Error: FireBrowse is Currently Offline.', 0];
+  };
+  
   // Check the fetched worked properly:
   if (TCGA_expression_JSON == '') {
     return ['Error: Invalid Input Fields for Query.', 0];

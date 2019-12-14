@@ -46,6 +46,8 @@ showError = function(errorType) {
     divElement.innerHTML += "Error: ".bold() + "Invalid Gene Fields for Query";
   } else if (errorType == 'cohortError') {
     divElement.innerHTML += "Error: ".bold() + "Invalid Cohort Fields for Query";
+  } else if (errorType == 'fireBrowseError') {
+    divElement.innerHTML += "Error: ".bold() + "The Firebrowse API is currently offline. Please check back later.";
   };
 };
 
