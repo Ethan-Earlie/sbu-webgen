@@ -1,79 +1,125 @@
 <body>
 
-  <!-- Next Steps: Bring in control data for comparison and have distribution functions displayed better.-->
-
   <!--
-    Uses a user input for the cohort list and gene list. These input lists should be comma seperated values.
+    Uses a user input for the cohort list and gene list. These input lists should be comma separated values.
   -->
 
   <!--
-    This code bellow is for import jobs.
+    Importing jobs:
   -->
   <head>
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+
+    <!-- Compiled and minified JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+    <!-- Load d3.js -->
+    <script src="https://d3js.org/d3.v4.js"></script>
+
+    <!-- Load color palettes -->
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+
     <script type="text/javascript" src = "https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="index_style.css">
-    <script type="text/javascript" src = "index_master.js"></script>
-    <script type="text/javascript" src = "index_data_import.js"></script>
-    <script type="text/javascript" src = "index_mRNASeq_histogram.js"></script>
-    <script type="text/javascript" src = "index_mRNASeq_heatmaps.js"></script>
-    <script type="text/javascript" src = "index_doc_manipulation.js"></script>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script type="text/javascript" src = "fetchExpressionData.js"></script>
+    <script type="text/javascript" src = "fetchSigMutationData.js"></script>
+    <script type="text/javascript" src = "getSigMutationArray.js"></script>
+    <script type="text/javascript" src = "getExpressionDataJSONarray.js"></script>
+    <script type="text/javascript" src = "createHeatmap.js"></script>
+    <script type="text/javascript" src = "docManipulation.js"></script>
   </head>
   
   <!--
-    This code bellow sets up the main heading.
+    Setting up the main heading:
   -->
   <body>
-    <h1 class="PageTitle">WebGen's mRNA-Seq Visualization API</h1>
+      <div class="navbar-fixed">
+          <nav>
+          <div class="nav-wrapper">
+            <a href="#" style="font-style: italic;" class="brand-logo center">WebGen</a>
+            <ul id="nav-mobile" class="right hide-on-med-and-down">
+              <li><a href="sass.html">API</a></li>
+              <li><a href="badges.html">About</a></li>
+            </ul>
+          </div>
+          </nav>
+      </div>
   
   <!--
-    This code bellow sets up the user input text fields and buttons.
+    Setting up the user input text fields and buttons.
   -->
-  <input class="CohortGenesInput" id='cohort_list' placeholder="Enter List of Cancer Cohorts Here">
-  <input class="CohortGenesInput" id='gene_list' placeholder="Enter List of Genes Here">
-  <button class="exampleSubmitButton" onclick="setExampleVars()" id='exampleButton'>
-    Use Example
-  </button>
-  <button class="exampleSubmitButton" onclick="setVars()" id='button1'>
-    Submit
-  </button>
-
-  <!--
-    This code bellow initializes the first div element.
+  <div class="center-align">
+      <div class="row center-align">
+      <input class="center-align" id='cohortQuery' placeholder="Enter List of Cancer Cohorts Here">
+      </div>
+      <div class="row center-align">
+      <input class="center-align" id='geneQuery' placeholder="Enter List of Genes Here">
+      </div>
+    </div>
+    
+    <!--
+    Setting up the buttons.
   -->
-  <div id=div0 style="margin-top:25px"></div>
-
-  <!--
-    This code bellow creates button for alert message on an error.
+    <div class="center-align">
+        <button class="col s3 btn waves-effect waves-light" onclick="setExampleVars()" id='exampleButton'>Use Example</button>
+        <button class="col s3 btn waves-effect waves-light" onclick="setVars()" id='button1'>Submit</button>
+    </div>
   
+  <!--
+    Setting up the tabs.
+  -->
+  <div class="tabs_container">  
+    <div class="row">
+      <ul class="tabs">
+        <li class="tab col s6"><a class="active" href="#heatmapRef">Heatmap</a></li>
+        <li class="tab col s6"><a href="#boxWhiskRef">Box and Whisker Plots</a></li>
+      </ul>
+      <!--
+        Setting up the plots to go under each tab.
+      -->
+      <div id="heatmapRef" class="col s12">
+        <div id=div0 style="margin-top:25px"></div>
+      </div>
+      <div id="boxWhiskRef" class="col s12">
+        <div id=divBoxWhisk0 style="margin-top:25px" align="center"></div>
+      </div>
+    </div>
+  </div>
+
+  <!--
+    Creating a button for alert message on an error:
   -->
   <span class="closebtn" id='span0' onclick="this.parentElement.style.display='none';">&times;</span>
   
 
   <!--
-    This code bellow contains the JS code for building the plots to display.
+    The JS code for building the plots to display:
   -->
   <script type="text/javascript">
     // Wait for user input to build plots:
     function setVars() {
       // Reset page formatting:
       document.getElementById('div0').innerHTML="";
-      document.getElementById('links').style.position = 'absolute';                      // Move links to stay at the bottom of the page.
       
-      // Removes existing divs if they're there:
-      removeElements();
+      // Removes existing div and svg elements if they're there:
+      removeDIVelements();
+      removeSVGelements();
 
       // Display loader:
       document.getElementById('div0').className = 'loader';                              // Create the loader.
 
       // Set user input variables:
-      var cohort_list = document.getElementById('cohort_list').value.toUpperCase().split(',');  
-      var gene_list = document.getElementById('gene_list').value.toUpperCase().split(',');
-      var cohort_list = cohort_list.map(x => x.trim());
-      var gene_list = gene_list.map(x => x.trim());
+      var cohortQuery = document.getElementById('cohortQuery').value.toUpperCase().split(',');  
+      var geneQuery = document.getElementById('geneQuery').value.toUpperCase().split(',');
+      var cohortQuery = cohortQuery.map(x => x.trim());
+      var geneQuery = geneQuery.map(x => x.trim());
+      var amountOfCohorts = amount(cohortQuery);
 
       // Check the cohort list to be valid:
-      validCohorts = checkCohortList(cohort_list);
+      validCohorts = checkCohortList(cohortQuery);
       if (validCohorts == false) {
         document.getElementById('div0').classList.remove('loader');                        // Remove the loader.
         showError('cohortError');
@@ -81,69 +127,94 @@
       }
 
       // Fetch RNA sequence data and display requested plots:
-      var dataToPlotInfo = ethan_getEFDdata(cohort_list, gene_list);
+      var dataToPlotInfo = getExpressionDataJSONarray(cohortQuery, geneQuery);
 
       // Once data is returned, build the plots:
       dataToPlotInfo.then(function(data) {
-        //Check that the fetch worked:
+        // Check that the fetch worked:
         if (data == 'Error: Invalid Input Fields for Query.') {
           document.getElementById('div0').classList.remove('loader');                      // Remove the loader.
           showError('geneError');
           return;
-        } else if (data == 'Error: FireBrowse is Currently Offline.') {
-          document.getElementById('div0').classList.remove('loader');                      // Remove the loader.
-          showError('fireBrowseError');
-          return 
         }
+        
+        // If the fetched worked, build the plots:
 
-        var dataToPlot = data[0];
-        var layoutArray = data[1];
-
-        // Get the genes with no mRNA-Seq data results:
-        var emptyGenesArray = data[2];
-        var j = 0;
-        if (emptyGenesArray.length > 0) {
-          var j = 1;
+        // Display Warning for any invalid genes:
+        var myGenesReturned = d3.map(data, function(d){return d.gene;}).keys();
+        var emptyGeneArray = geneQuery.filter(function(gene) { if (!myGenesReturned.includes(gene)) { return gene} });
+        if (emptyGeneArray.length > 0) {
+          showWarning(emptyGeneArray)
         };
 
-        // Create plot for each gene/cohort combination:
-        var L = dataToPlot.length
+        // Set up the figure dimensions:
+        var margin = {top: 80, right: 30, bottom: 30, left: 60},
+            width = 1250 - margin.left - margin.right,
+            height = 500 - margin.top - margin.bottom;
+
         document.getElementById('div0').classList.remove('loader');                        // Remove the loader.
-        for (var i = j; i < L+j; i ++) {
-          if (i>0) {
-            addElement("div"+i,"div"+(i-1));                                               // Append new Div elements.
-          };
-          Plotly.newPlot("div"+i, dataToPlot[i-j], layoutArray[i-j], {responsive: true});  // Create all plots
+
+        // Build the heatmap:
+        // Append an svg object:
+        var svg = d3.select("#heatmapRef").append("svg")
+            .attr("viewBox", `0 0 1250 500`)                                           // This line makes the svg responsive
+            .attr("id", 'svgHeatMap')
+            .append("g")
+            .attr("transform",
+                "translate(" + margin.left + "," + margin.top + ")");
+
+        // Create the heatmap:
+        createHeatmap('cohort', cohortQuery, data, svg);
+
+        // Box and Whisker Plot to be added below:
+
+        /////////////////////////////////////////////////////////////////////////////////////
+        // Below is dummy data to display an example box and whisker plot for the time being:
+        var y0 = []
+        var y1 = [];
+        for (var i = 0; i < 50; i ++) {
+          y0[i] = Math.random();
+          y1[i] = Math.random() + 1;
+        }
+        var trace1 = {
+          y: y0,
+          type: 'box'
         };
-        document.getElementById('links').style.position = 'relative';                      // Move links to stay at the bottom of the page.
+        var trace2 = {
+          y: y1,
+          type: 'box'
+        };
+        var dataBoxPlot = [trace1, trace2];
+        var layout = {
+        title: 'd3 Gene Expression Box and Whisker Plot to Added Here'
+        };
+        Plotly.newPlot(divBoxWhisk0, dataBoxPlot, layout);
+        // Above is dummy data to display an example box and whisker plot for the time being:
+        /////////////////////////////////////////////////////////////////////////////////////
+
+        //document.getElementById('links').style.position = 'relative';                      // Move links to stay at the bottom of the page.
       });
     };
   </script>
 
   <!--
-    This code bellow is for if the user wants to use the example input cohort and gene lists.
+    Setting up the ability to use the example input cohort and gene lists:
   -->
   <script>
-  // This script is to set the cohort and gene list examples if the user clicks the use example button:
+  // Setting the cohort and gene list examples if the user clicks the use example button:
   function setExampleVars() {
-      document.getElementById('cohort_list').value = 'BRCA, SARC';
-      document.getElementById('gene_list').value = 'BRCA1, EGFR, KRAS, TP53';
+      document.getElementById('cohortQuery').value = 'BRCA, SARC';
+      document.getElementById('geneQuery').value = 'BRCA1, EGFR, KRAS, TP53';
     };
   </script>
-  
 
-  <!--
-    This code bellow is to display relevant hyperlinks for the page.
+<!--
+    Setting tabs:
   -->
-  <div id="links" class="relevantLinks">
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    <a href="https://github.com/web4bio/webgen">Team GitHub Page</a>
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    <a href="https://www.stonybrook.edu/commcms/vertically-integrated-projects/teams/_team_page/team_page.php?team=WebGen%20(Web%20Genomics)">Stony Brook University's VIP Page</a>
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    <a href="https://portal.gdc.cancer.gov">NCI's Genomic Data Commons</a>
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    <a href="http://firebrowse.org/">Firebrowse by the Broad Institute</a>
-  </div>
+<script> 
+    var elem = document.querySelector('.tabs');
+    var options = {}
+    var instance = M.Tabs.init(elem, options);
+</script>
 
 </body>
