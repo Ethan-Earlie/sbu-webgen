@@ -26,7 +26,7 @@ fillCancerTypeSelectBox = async function() {
 };
 
 fillGeneSelectBox = async function() {
-    let geneList = await fetch("https://raw.githubusercontent.com/Ethan-Earlie/sbu-webgen/master/geneList.json").then(response => response.json())
+    let geneList = await fetch("https://raw.githubusercontent.com/web4bio/webgen/master/main/geneList.json").then(response => response.json())
     var selectBox = document.getElementById("geneMultipleSelection");
     
     for(i = 0; i < geneList.length; i++) {
@@ -63,5 +63,11 @@ fetchCohortData = async function() {
     }
   
   }
-  
+
+getValidGeneList = async function() {
+    var validGeneList = await fetch("https://raw.githubusercontent.com/web4bio/webgen/master/main/validGeneList.json").then(response => response.json());
+    validGeneList = validGeneList.map(geneInfo => geneInfo.hugoSymbol);
+
+    return await validGeneList
+}  
 // END OF PROGRAM
